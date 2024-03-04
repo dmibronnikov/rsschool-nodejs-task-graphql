@@ -5,6 +5,8 @@ import { PostMutations } from './posts/mutation.js';
 import { MemberTypeQueries } from './memberTypes/query.js';
 import { ProfileQueries } from './profiles/query.js';
 import { UserQueries } from './users/query.js';
+import { UserMutations } from './users/mutation.js';
+import { ProfileMutations } from './profiles/mutation.js';
 
 export const gqlResponseSchema = Type.Partial(
   Type.Object({
@@ -39,6 +41,8 @@ const mutation = new GraphQLObjectType({
   name: "Mutation",
   fields: () => ({
     ...PostMutations,
+    ...UserMutations,
+    ...ProfileMutations
   }),
 });
 

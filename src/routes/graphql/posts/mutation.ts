@@ -10,7 +10,7 @@ type CreatePostArgs = {
 
 type ChangePostArgs = {
   id: string,
-  dto: Omit<Post, 'id'|'authorId'>
+  dto: Omit<Post, 'id'>
 };
 
 type DeletePostArgs = {
@@ -29,8 +29,9 @@ const CreatePostInput = new GraphQLInputObjectType({
 const ChangePostInput = new GraphQLInputObjectType({
   name: 'ChangePostInput',
   fields: () => ({
-    title: { type: new GraphQLNonNull(GraphQLString) },
-    content: { type: new GraphQLNonNull(GraphQLString) },
+    title: { type: GraphQLString },
+    content: { type: GraphQLString },
+    authorId: { type: UUIDType },
   }),
 });
 
@@ -38,7 +39,7 @@ const createPost: GraphQLFieldConfig<void, Context, CreatePostArgs> = {
   type: PostType,
   args: { dto: { type: new GraphQLNonNull(CreatePostInput) } },
   resolve: async (_source, { dto }, { prisma }) => {
-    await prisma.post.create({ data: dto });
+    return await prisma.post.create({ data: dto });
   },
 };
 
@@ -49,7 +50,7 @@ const changePost: GraphQLFieldConfig<void, Context, ChangePostArgs> = {
     dto: { type: new GraphQLNonNull(ChangePostInput) } 
   },
   resolve: async (_source, args, { prisma }) => {
-    await prisma.post.update({
+    return await prisma.post.update({
       where: { id: args.id },
       data: args.dto,
     });
@@ -57,10 +58,11 @@ const changePost: GraphQLFieldConfig<void, Context, ChangePostArgs> = {
 };
 
 const deletePost: GraphQLFieldConfig<void, Context, DeletePostArgs> = {
-  type: PostType,
+  type: new GraphQLNonNull(UUIDType),
   args: { id: { type: new GraphQLNonNull(UUIDType) } },
   resolve: async (_source, { id }, { prisma }) => {
-    await prisma.post.delete({ where: { id: id } });
+    const post = await prisma.post.delete({ where: { id: id } });
+    return post.id;
   }
 }
 
